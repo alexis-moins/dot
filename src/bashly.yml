@@ -1,0 +1,77 @@
+name: dot
+help: dotfiles manager based on stow
+version: 0.1.0
+
+environment_variables:
+  - name: DOT_INSTALL_DIR
+    help: Directory where the repository was cloned
+    default: ${HOME}/.dot
+
+  - name: DOT_DOTFILES_DIR
+    help: Directory where the projects will be managed
+    default: ${HOME}/dotfiles
+
+dependencies:
+  - git
+  - fd
+  - gum
+  - rg
+
+commands:
+  - name: help
+    help: Show help about a command
+    args:
+    - name: command
+      help: Help subject
+
+  - name: clone
+    help: Clone a remote git dotfiles repository
+    group: Dotfiles
+
+    args:
+      - name: repository
+        help: "Remote repository to clone (FORMAT: <username>/<repository>)"
+        required: true
+
+    examples:
+      - dot clone alexis-moins/dotfiles
+
+  - name: link
+    help: Create a link to the dot script
+
+    args:
+      - name: path
+        help: Path to the link
+        default: ${HOME}/.local/bin
+
+    flags:
+      - short: -c
+        long: --copy
+        help: Copy the script instead of creating a symbolic link
+
+    examples:
+      - dot link -c
+      - dot link /usr/bin
+
+  - name: unlink
+    help: Remove the link to the dot script
+
+    args:
+      - name: path
+        help: Path to the link
+        default: ${HOME}/.local/bin
+
+    examples:
+      - dot unlink
+
+  - name: update
+    help: Update to the latest version
+
+    examples:
+      - dot update
+
+  - name: env
+    help: Show environment information
+
+    examples:
+      - dot env
