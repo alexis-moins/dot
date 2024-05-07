@@ -1,5 +1,5 @@
 name: dot
-help: dotfiles manager based on stow
+help: dotfiles manager
 version: 0.1.0
 
 environment_variables:
@@ -8,14 +8,13 @@ environment_variables:
     default: ${HOME}/.dot
 
   - name: DOT_DOTFILES_DIR
-    help: Directory where the projects will be managed
+    help: Directory where the dotfiles were cloned
     default: ${HOME}/dotfiles
 
 dependencies:
   - git
-  - fd
   - gum
-  - rg
+  - stow
 
 commands:
   - name: help
