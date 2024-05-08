@@ -3,6 +3,10 @@ help: dotfiles manager
 version: 0.1.0
 
 environment_variables:
+  - name: EDITOR
+    help: Editor to use for interactive commands
+    default: vim
+
   - name: DOT_INSTALL_DIR
     help: Directory where the repository was cloned
     default: ${HOME}/.dot

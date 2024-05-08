@@ -59,6 +59,11 @@ dot_usage() {
 
     printf "%s\n" "Environment Variables:"
 
+    printf "  %s\n" "EDITOR"
+    printf "    Editor to use for interactive commands\n"
+    printf "    Default: vim\n"
+    echo
+
     printf "  %s\n" "DOT_INSTALL_DIR"
     printf "    Directory where the repository was cloned\n"
     printf "    Default: ${HOME}/.dot\n"
@@ -781,9 +786,11 @@ parse_requirements() {
     esac
   done
 
+  export EDITOR="${EDITOR:-vim}"
   export DOT_INSTALL_DIR="${DOT_INSTALL_DIR:-${HOME}/.dot}"
   export DOT_DOTFILES_DIR="${DOT_DOTFILES_DIR:-${HOME}/dotfiles}"
 
+  env_var_names+=("EDITOR")
   env_var_names+=("DOT_INSTALL_DIR")
   env_var_names+=("DOT_DOTFILES_DIR")
 
@@ -1544,6 +1551,7 @@ initialize() {
   long_usage=''
   set -e
 
+  export EDITOR="${EDITOR:-vim}"
   export DOT_INSTALL_DIR="${DOT_INSTALL_DIR:-${HOME}/.dot}"
   export DOT_DOTFILES_DIR="${DOT_DOTFILES_DIR:-${HOME}/dotfiles}"
 

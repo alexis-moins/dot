@@ -58,14 +58,22 @@ Usage:
   dot --version | -v
 
 Commands:
-  help     Show help about a command
-  link     Create a link to the dot script
-  unlink   Remove the link to the dot script
-  update   Update to the latest version
-  env      Show environment information
+  help      Show help about a command
+  link      Create a link to the dot script
+  unlink    Remove the link to the dot script
+  update    Update dot to the latest version
+  env       Show environment information
+  dir       Show dotfiles directory
 
 Dotfiles Commands:
-  clone    Clone a remote git dotfiles repository
+  clone     Clone a remote git dotfiles repository
+  edit      Edit your dotfiles
+  sync      Update your dotfiles to the latest commit
+  install   Install dotfiles using symbolic links
+  clear     Remove symbolic links from /Users/alexis
+  status    Show the status of your dotfiles
+  stage     Stage files for committing later
+  restore   Unstage files
 
 Options:
   --help, -h
@@ -75,12 +83,16 @@ Options:
     Show version number
 
 Environment Variables:
+  EDITOR
+    Editor to use for interactive commands
+    Default: vim
+
   DOT_INSTALL_DIR
     Directory where the repository was cloned
-    Default: /Users/alexis/.dot
+    Default: ~/.dot
 
   DOT_DOTFILES_DIR
     Directory where the dotfiles were cloned
-    Default: /Users/alexis/dotfiles
+    Default: ~/dotfiles
 ```
 
