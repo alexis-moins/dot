@@ -1,1 +1,1 @@
-echo "${DOT_DOTFILES_DIR}"
+echo "${DOTFILES_DIR}"

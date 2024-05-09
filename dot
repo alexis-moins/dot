@@ -45,6 +45,8 @@ dot_usage() {
   printf "  %s   Show the status of your dotfiles\n" "status "
   printf "  %s   Stage files for committing later\n" "stage  "
   printf "  %s   Unstage files\n" "restore"
+  printf "  %s   List files from your dotfiles\n" "list   "
+  printf "  %s   Show diff with last commit\n" "diff   "
   echo
 
   if [[ -n $long_usage ]]; then
@@ -69,8 +71,8 @@ dot_usage() {
     printf "    Default: ${HOME}/.dot\n"
     echo
 
-    printf "  %s\n" "DOT_DOTFILES_DIR"
-    printf "    Directory where the dotfiles were cloned\n"
+    printf "  %s\n" "DOTFILES_DIR"
+    printf "    Directory containing your dotfiles\n"
     printf "    Default: ${HOME}/dotfiles\n"
     echo
 
@@ -512,7 +514,7 @@ dot_restore_usage() {
 
   fi
 
-  printf "Alias: unstage\n"
+  printf "Alias: unstage, rs\n"
   echo
 
   printf "%s\n" "Usage:"
@@ -529,6 +531,79 @@ dot_restore_usage() {
 
     printf "%s\n" "Examples:"
     printf "  dot restore\n"
+    echo
+
+  fi
+}
+
+dot_list_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot list - List files from your dotfiles\n"
+    echo
+
+  else
+    printf "dot list - List files from your dotfiles\n"
+    echo
+
+  fi
+
+  printf "Alias: ls\n"
+  echo
+
+  printf "%s\n" "Usage:"
+  printf "  dot list\n"
+  printf "  dot list --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot list\n"
+    echo
+
+  fi
+}
+
+dot_diff_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot diff - Show diff with last commit\n"
+    echo
+
+  else
+    printf "dot diff - Show diff with last commit\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  dot diff [OPTIONS]\n"
+  printf "  dot diff --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--pick, -p"
+    printf "    Interactively pick files to diff\n"
+    echo
+
+    printf "  %s\n" "--staged, -s"
+    printf "    Only show diff for staged files\n"
+    echo
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot diff\n"
+    printf "  dot diff --all\n"
+    printf "  dot diff --staged\n"
     echo
 
   fi
@@ -589,6 +664,42 @@ blue_underlined() { print_in_color "\e[4;34m" "$*"; }
 magenta_underlined() { print_in_color "\e[4;35m" "$*"; }
 cyan_underlined() { print_in_color "\e[4;36m" "$*"; }
 
+filter_dotfiles() {
+    run_git ls-files | gum filter --placeholder="Select a file..."
+}
+
+filter_dotfiles_is_healthy() {
+    if [[ ! -d "${DOTFILES_DIR}" ]]; then
+        warn "${DOTFILES_DIR} is not a directory."
+        return 1
+    fi
+
+    if [[ ! -d "${DOTFILES_DIR}/.git" ]]; then
+        warn "your dotfiles directory is not a git repository."
+        return 1
+    fi
+}
+
+interactive_diff() {
+    candidates="$(run_git ls-files -mo --exclude-standard --full-name )"
+    [[ -z "${candidates}" ]] && info 'no changes to diff.' && return 1
+
+    local files="$(echo "${candidates}" | gum filter --placeholder="Select files to diff" --no-limit)"
+    [[ -z "${files}" ]] && return 1
+
+    run_git diff "${files}"
+}
+
+interactive_staged_diff() {
+    candidates="$(run_git diff --cached --name-only)"
+    [[ -z "${candidates}" ]] && info 'no staged changes to diff.' && return 1
+
+    local files="$(echo "${candidates}" | gum filter --placeholder="Select files to diff" --no-limit)"
+    [[ -z "${files}" ]] && return 1
+
+    run_git diff --staged "${files}"
+}
+
 error() {
     gum log --level="error" --prefix="pm" --prefix.foreground="7" --level.foreground="1" "${1}"
 }
@@ -598,15 +709,15 @@ info() {
 }
 
 warn() {
-    gum log --level="warn" --prefix="pm" --prefix.foreground="7" --level.foreground="3" "${1}"
+    echo "$(red "dot: ") ${1}"
 }
 
 run_git() {
-    command git -C "${DOT_DOTFILES_DIR}" ${@}
+    command git -C "${DOTFILES_DIR}" ${@}
 }
 
 run_stow() {
-    command stow --dir="${DOT_DOTFILES_DIR}" --target="${HOME}" ${@} .
+    command stow --dir="${DOTFILES_DIR}" --target="${HOME}" ${@} .
 }
 
 dot_help_command() {
@@ -634,13 +745,13 @@ dot_help_command() {
 dot_clone_command() {
   local repository="${args[repository]}"
 
-  if [[ -d "${DOT_DOTFILES_DIR}" ]]; then
-      error "${DOT_DOTFILES_DIR} is not empty."
+  if [[ -d "${DOTFILES_DIR}" ]]; then
+      error "${DOTFILES_DIR} is not empty."
       error "Remove it manually if it was intentional."
       exit 1
   fi
 
-  command git clone "git@github.com:${repository}.git" "${DOT_DOTFILES_DIR}"
+  command git clone "git@github.com:${repository}.git" "${DOTFILES_DIR}"
   info "cloned dotfiles."
 
 }
@@ -700,14 +811,14 @@ dot_update_command() {
 
 dot_env_command() {
   echo "DOT_INSTALL_DIR=${DOT_INSTALL_DIR}"
-  echo "DOT_DOTFILES_DIR=${DOT_DOTFILES_DIR}"
+  echo "DOTFILES_DIR=${DOTFILES_DIR}"
 
 }
 
 dot_edit_command() {
   local file="$(run_git ls-files | gum filter --placeholder="Select a file")"
 
-  [[ -n "${file}" ]] && $EDITOR "${DOT_DOTFILES_DIR}/${file}"
+  [[ -n "${file}" ]] && $EDITOR "${DOTFILES_DIR}/${file}"
 
 }
 
@@ -732,7 +843,7 @@ dot_status_command() {
 }
 
 dot_dir_command() {
-  echo "${DOT_DOTFILES_DIR}"
+  echo "${DOTFILES_DIR}"
 
 }
 
@@ -764,6 +875,31 @@ dot_restore_command() {
 
 }
 
+dot_list_command() {
+  run_git ls-files
+
+}
+
+dot_diff_command() {
+  local pick="${args[--pick]}"
+  local staged="${args[--staged]}"
+
+  if [[ -n "${pick}" ]]; then
+      if [[ -n "${staged}" ]]; then
+          interactive_staged_diff
+      else
+          interactive_diff
+      fi
+  else
+      if [[ -z "${staged}" ]]; then
+          run_git diff
+      else
+          run_git diff --staged
+      fi
+  fi
+
+}
+
 parse_requirements() {
 
   while [[ $# -gt 0 ]]; do
@@ -788,11 +924,11 @@ parse_requirements() {
 
   export EDITOR="${EDITOR:-vim}"
   export DOT_INSTALL_DIR="${DOT_INSTALL_DIR:-${HOME}/.dot}"
-  export DOT_DOTFILES_DIR="${DOT_DOTFILES_DIR:-${HOME}/dotfiles}"
+  export DOTFILES_DIR="${DOTFILES_DIR:-${HOME}/dotfiles}"
 
   env_var_names+=("EDITOR")
   env_var_names+=("DOT_INSTALL_DIR")
-  env_var_names+=("DOT_DOTFILES_DIR")
+  env_var_names+=("DOTFILES_DIR")
 
   if command -v git >/dev/null 2>&1; then
     deps['git']="$(command -v git | head -n1)"
@@ -911,10 +1047,24 @@ parse_requirements() {
       shift $#
       ;;
 
-    restore | unstage)
+    restore | unstage | rs)
       action="restore"
       shift
       dot_restore_parse_requirements "$@"
+      shift $#
+      ;;
+
+    list | ls)
+      action="list"
+      shift
+      dot_list_parse_requirements "$@"
+      shift $#
+      ;;
+
+    diff)
+      action="diff"
+      shift
+      dot_diff_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1264,6 +1414,12 @@ dot_edit_parse_requirements() {
     esac
   done
 
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
 }
 
 dot_sync_parse_requirements() {
@@ -1303,6 +1459,12 @@ dot_sync_parse_requirements() {
 
     esac
   done
+
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
 
 }
 
@@ -1344,6 +1506,12 @@ dot_install_parse_requirements() {
     esac
   done
 
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
 }
 
 dot_clear_parse_requirements() {
@@ -1384,6 +1552,12 @@ dot_clear_parse_requirements() {
     esac
   done
 
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
 }
 
 dot_status_parse_requirements() {
@@ -1423,6 +1597,12 @@ dot_status_parse_requirements() {
 
     esac
   done
+
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
 
 }
 
@@ -1504,6 +1684,12 @@ dot_stage_parse_requirements() {
     esac
   done
 
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
 }
 
 dot_restore_parse_requirements() {
@@ -1544,6 +1730,116 @@ dot_restore_parse_requirements() {
     esac
   done
 
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_list_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_list_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="list"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_diff_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_diff_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="diff"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      --pick | -p)
+
+        args['--pick']=1
+        shift
+        ;;
+
+      --staged | -s)
+
+        args['--staged']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_is_healthy)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
 }
 
 initialize() {
@@ -1553,7 +1849,7 @@ initialize() {
 
   export EDITOR="${EDITOR:-vim}"
   export DOT_INSTALL_DIR="${DOT_INSTALL_DIR:-${HOME}/.dot}"
-  export DOT_DOTFILES_DIR="${DOT_DOTFILES_DIR:-${HOME}/dotfiles}"
+  export DOTFILES_DIR="${DOTFILES_DIR:-${HOME}/dotfiles}"
 
 }
 
@@ -1581,6 +1877,8 @@ run() {
     "dir") dot_dir_command ;;
     "stage") dot_stage_command ;;
     "restore") dot_restore_command ;;
+    "list") dot_list_command ;;
+    "diff") dot_diff_command ;;
   esac
 }
 

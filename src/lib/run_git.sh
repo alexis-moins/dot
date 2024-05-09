@@ -1,4 +1,4 @@
 run_git() {
-    command git -C "${DOT_DOTFILES_DIR}" ${@}
+    command git -C "${DOTFILES_DIR}" ${@}
 }
 

@@ -74,6 +74,8 @@ Dotfiles Commands:
   status    Show the status of your dotfiles
   stage     Stage files for committing later
   restore   Unstage files
+  list      List files from your dotfiles
+  diff      Show diff with last commit
 
 Options:
   --help, -h
@@ -91,8 +93,8 @@ Environment Variables:
     Directory where the repository was cloned
     Default: ~/.dot
 
-  DOT_DOTFILES_DIR
-    Directory where the dotfiles were cloned
+  DOTFILES_DIR
+    Directory containing your dotfiles
     Default: ~/dotfiles
 ```
 

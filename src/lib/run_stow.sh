@@ -1,4 +1,4 @@
 run_stow() {
-    command stow --dir="${DOT_DOTFILES_DIR}" --target="${HOME}" ${@} .
+    command stow --dir="${DOTFILES_DIR}" --target="${HOME}" ${@} .
 }
 
