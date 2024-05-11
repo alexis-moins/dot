@@ -1,11 +1,11 @@
-local pick="${args[--pick]}"
+local files="${other_args[*]}"
 local staged="${args[--staged]}"
 
-if [[ -n "${pick}" ]]; then
+if [[ -n "${files}" ]]; then
     if [[ -n "${staged}" ]]; then
-        interactive_staged_diff
+        run_git diff --staged ${files}
     else
-        interactive_diff
+        run_git diff ${files}
     fi
 else
     if [[ -z "${staged}" ]]; then

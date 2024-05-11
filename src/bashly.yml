@@ -83,6 +83,10 @@ commands:
     help: Edit your dotfiles
     group: Dotfiles
 
+    args:
+      - name: file
+        help: File to edit (relative to \$DOTFILES_DIR)
+
     filters:
       - dotfiles_directory
       - dotfiles_git
@@ -150,6 +154,10 @@ commands:
     help: Stage files for committing later
     group: Dotfiles
 
+    catch_all:
+      label: files
+      help: Files to stage (relative to \$DOTFILES_DIR)
+
     filters:
       - dotfiles_directory
       - dotfiles_git
@@ -160,6 +168,10 @@ commands:
   - name: unstage
     help: Unstage files
     group: Dotfiles
+
+    catch_all:
+      label: files
+      help: Files to unstage (relative to \$DOTFILES_DIR)
 
     filters:
       - dotfiles_directory
@@ -172,6 +184,10 @@ commands:
     help: Restore unstaged files to their previous state
     alias: rs
     group: Dotfiles
+
+    catch_all:
+      label: files
+      help: Files to restore (relative to \$DOTFILES_DIR)
 
     filters:
       - dotfiles_directory
@@ -196,11 +212,11 @@ commands:
     help: Show diff with last commit
     group: Dotfiles
 
-    flags:
-      - short: -p
-        long: --pick
-        help: Interactively pick files to diff
+    catch_all:
+      label: files
+      help: Files to diff (relative to \$DOTFILES_DIR)
 
+    flags:
       - short: -s
         long: --staged
         help: Only show diff for staged files
@@ -211,8 +227,24 @@ commands:
 
     examples:
       - dot diff
-      - dot diff --pick
       - dot diff --staged
+
+  - name: idiff
+    help: Show interactive diff with last commit
+    group: Dotfiles
+
+    flags:
+      - short: -s
+        long: --staged
+        help: Only show diff for staged files
+
+    filters:
+      - dotfiles_directory
+      - dotfiles_git
+
+    examples:
+      - dot idiff
+      - dot idiff --staged
 
   - name: filter
     help: Filter files from your dotfiles
@@ -251,3 +283,12 @@ commands:
 
     examples:
       - dot cd
+
+  - name: add
+    help: Add files to your dotfiles
+    group: Dotfiles
+
+    catch_all:
+      label: files
+      help: Files
+      required: true

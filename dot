@@ -48,9 +48,11 @@ dot_usage() {
   printf "  %s   Restore unstaged files to their previous state\n" "restore  "
   printf "  %s   List files from your dotfiles\n" "list     "
   printf "  %s   Show diff with last commit\n" "diff     "
+  printf "  %s   Show interactive diff with last commit\n" "idiff    "
   printf "  %s   Filter files from your dotfiles\n" "filter   "
   printf "  %s   Commit changes\n" "commit   "
   printf "  %s   Navigate to your dotfiles in a new shell\n" "cd       "
+  printf "  %s   Add files to your dotfiles\n" "add      "
   echo
 
   if [[ -n $long_usage ]]; then
@@ -303,7 +305,7 @@ dot_edit_usage() {
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot edit\n"
+  printf "  dot edit [FILE]\n"
   printf "  dot edit --help | -h\n"
   echo
 
@@ -312,6 +314,12 @@ dot_edit_usage() {
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    printf "  %s\n" "FILE"
+    printf "    File to edit (relative to \$DOTFILES_DIR)\n"
     echo
 
     printf "%s\n" "Examples:"
@@ -490,7 +498,7 @@ dot_stage_usage() {
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot stage\n"
+  printf "  dot stage [FILES...]\n"
   printf "  dot stage --help | -h\n"
   echo
 
@@ -499,6 +507,12 @@ dot_stage_usage() {
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    echo "  FILES..."
+    printf "    Files to stage (relative to \$DOTFILES_DIR)\n"
     echo
 
     printf "%s\n" "Examples:"
@@ -520,7 +534,7 @@ dot_unstage_usage() {
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot unstage\n"
+  printf "  dot unstage [FILES...]\n"
   printf "  dot unstage --help | -h\n"
   echo
 
@@ -529,6 +543,12 @@ dot_unstage_usage() {
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    echo "  FILES..."
+    printf "    Files to unstage (relative to \$DOTFILES_DIR)\n"
     echo
 
     printf "%s\n" "Examples:"
@@ -553,7 +573,7 @@ dot_restore_usage() {
   echo
 
   printf "%s\n" "Usage:"
-  printf "  dot restore\n"
+  printf "  dot restore [FILES...]\n"
   printf "  dot restore --help | -h\n"
   echo
 
@@ -562,6 +582,12 @@ dot_restore_usage() {
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    echo "  FILES..."
+    printf "    Files to restore (relative to \$DOTFILES_DIR)\n"
     echo
 
     printf "%s\n" "Examples:"
@@ -616,16 +642,53 @@ dot_diff_usage() {
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot diff [OPTIONS]\n"
+  printf "  dot diff [OPTIONS] [FILES...]\n"
   printf "  dot diff --help | -h\n"
   echo
 
   if [[ -n $long_usage ]]; then
     printf "%s\n" "Options:"
 
-    printf "  %s\n" "--pick, -p"
-    printf "    Interactively pick files to diff\n"
+    printf "  %s\n" "--staged, -s"
+    printf "    Only show diff for staged files\n"
     echo
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    echo "  FILES..."
+    printf "    Files to diff (relative to \$DOTFILES_DIR)\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot diff\n"
+    printf "  dot diff --staged\n"
+    echo
+
+  fi
+}
+
+dot_idiff_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot idiff - Show interactive diff with last commit\n"
+    echo
+
+  else
+    printf "dot idiff - Show interactive diff with last commit\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  dot idiff [OPTIONS]\n"
+  printf "  dot idiff --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
 
     printf "  %s\n" "--staged, -s"
     printf "    Only show diff for staged files\n"
@@ -636,9 +699,8 @@ dot_diff_usage() {
     echo
 
     printf "%s\n" "Examples:"
-    printf "  dot diff\n"
-    printf "  dot diff --pick\n"
-    printf "  dot diff --staged\n"
+    printf "  dot idiff\n"
+    printf "  dot idiff --staged\n"
     echo
 
   fi
@@ -743,6 +805,38 @@ dot_cd_usage() {
   fi
 }
 
+dot_add_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot add - Add files to your dotfiles\n"
+    echo
+
+  else
+    printf "dot add - Add files to your dotfiles\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  dot add FILES...\n"
+  printf "  dot add --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    echo "  FILES..."
+    printf "    Files\n"
+    echo
+
+  fi
+}
+
 normalize_input() {
   local arg flags
 
@@ -842,6 +936,10 @@ error() {
 
 info() {
     echo "$(blue "dot:" ) ${1}"
+}
+
+success() {
+    echo "$(green "dot:" ) ${1}"
 }
 
 warn() {
@@ -958,9 +1056,15 @@ dot_env_command() {
 }
 
 dot_edit_command() {
-  local file="$(run_git ls-files | gum filter --placeholder="Select a file")"
+  local file="${args[file]}"
 
-  [[ -n "${file}" ]] && $EDITOR "${DOTFILES_DIR}/${file}"
+  if [[ -n "${file}" ]]; then
+      command $EDITOR "${DOTFILES_DIR}/${file}"
+  else
+      local file="$(run_git ls-files --others --cached --modified | gum filter --placeholder="Select a file")"
+
+      [[ -n "${file}" ]] && $EDITOR "${DOTFILES_DIR}/${file}"
+  fi
 
 }
 
@@ -996,61 +1100,73 @@ dot_dir_command() {
 }
 
 dot_stage_command() {
-  candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
+  if [[ -n "${other_args[*]}" ]]; then
+      run_git add ${other_args[*]} && success "staged file(s) - ${other_args[*]}"
+  else
+      candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
 
-  [[ -z "${candidates}" ]] && info "no more changes to stage." && return 0
+      [[ -z "${candidates}" ]] && info "no more changes to stage." && return 0
 
-  local files="$(echo "${candidates}" \
-      | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to stage" )"
+      local files="$(echo "${candidates}" \
+          | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to stage" )"
 
-  [[ -z "${files}" ]] && return 0
+      [[ -z "${files}" ]] && return 0
 
-  run_git add "$(echo "${files}" | tr '\n' ' ')"
+      run_git add "$(echo "${files}" | tr '\n' ' ')"
+  fi
 
 }
 
 dot_unstage_command() {
-  candidates="$(run_git diff --cached --name-only)"
+  if [[ -n "${other_args[*]}" ]]; then
+      run_git restore --staged ${other_args[*]} && success "unstaged file(s) - ${other_args[*]}"
+  else
+      candidates="$(run_git diff --cached --name-only)"
 
-  [[ -z "${candidates}" ]] && info "no more changes to unstage." && return 0
+      [[ -z "${candidates}" ]] && info "no more changes to unstage." && return 0
 
-  local files="$(echo "${candidates}" \
-      | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to unstage" )"
+      local files="$(echo "${candidates}" \
+          | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to unstage" )"
 
-  [[ -z "${files}" ]] && return 0
+      [[ -z "${files}" ]] && return 0
 
-  run_git restore --staged "$(echo "${files}" | tr '\n' ' ')"
+      run_git restore --staged "$(echo "${files}" | tr '\n' ' ')"
+  fi
 
 }
 
 dot_restore_command() {
-  candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
+  if [[ -n "${other_args[*]}" ]]; then
+      run_git restore ${other_args[*]} && success "restored file(s) - ${other_args[*]}"
+  else
+      candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
 
-  [[ -z "${candidates}" ]] && info "no more changes to restore." && return 0
+      [[ -z "${candidates}" ]] && info "no more changes to restore." && return 0
 
-  local files="$(echo "${candidates}" \
-      | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Files to restore...")"
+      local files="$(echo "${candidates}" \
+          | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Files to restore...")"
 
-  [[ -z "${files}" ]] && return 0
+      [[ -z "${files}" ]] && return 0
 
-  run_git restore "$(echo "${files}" | tr '\n' ' ')"
+      run_git restore "$(echo "${files}" | tr '\n' ' ')"
+  fi
 
 }
 
 dot_list_command() {
-  run_git ls-files
+  run_git ls-files --others --cached --modified
 
 }
 
 dot_diff_command() {
-  local pick="${args[--pick]}"
+  local files="${other_args[*]}"
   local staged="${args[--staged]}"
 
-  if [[ -n "${pick}" ]]; then
+  if [[ -n "${files}" ]]; then
       if [[ -n "${staged}" ]]; then
-          interactive_staged_diff
+          run_git diff --staged ${files}
       else
-          interactive_diff
+          run_git diff ${files}
       fi
   else
       if [[ -z "${staged}" ]]; then
@@ -1058,6 +1174,17 @@ dot_diff_command() {
       else
           run_git diff --staged
       fi
+  fi
+
+}
+
+dot_idiff_command() {
+  local staged="${args[--staged]}"
+
+  if [[ -n "${staged}" ]]; then
+      interactive_staged_diff
+  else
+      interactive_diff
   fi
 
 }
@@ -1079,14 +1206,53 @@ dot_commit_command() {
 }
 
 dot_cd_command() {
-  echo "# this file is located in 'src/cd_command.sh'"
-  echo "# code for 'dot cd' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+  command cd "${DOTFILES_DIR}" && command "${SHELL}"
 
-  command cd "${DOTFILES_DIR}"
+}
 
-  command "${SHELL}"
+dot_add_command() {
+  local pattern="${HOME}/"
+
+  for file_path in ${other_args[*]}; do
+      # Make file_path absolute and follow symlinks
+      file_path="$(realpath "${file_path}")"
+
+      local relative_path="${file_path/${pattern}/}"
+      # echo "relative_path: ${relative_path}"
+
+      if [[ "${file_path}" = ${DOTFILES_DIR}/* ]]; then
+          error "${relative_path/dotfiles\//} is already in your dotfiles"
+          continue
+      fi
+
+      if [[ ! -e "${file_path}" ]]; then
+          error "${relative_path} not found"
+          continue
+      fi
+
+      local path_in_dotfiles="${DOTFILES_DIR}/${relative_path}"
+      # echo "path_in_dotfiles: ${path_in_dotfiles}"
+
+      if [[ -e "${path_in_dotfiles}" ]]; then
+          error "${relative_path} is already in your dotfiles"
+          continue
+      fi
+
+      # If it's a directory, attempt to copy it recursively
+      if [[ -d "${file_path}" ]]; then
+          command cp -R "${file_path}" "${path_in_dotfiles}" \
+              && success "${relative_path} added to your dotfiles"
+      else
+          local directory="$(dirname "${path_in_dotfiles}")"
+
+          # echo "directory: ${directory}"
+
+          [[ ! -d "${directory}" ]] && command mkdir -p "${directory}"
+
+          command cp "${file_path}" "${path_in_dotfiles}" \
+              && success "${relative_path} added to your dotfiles"
+      fi
+  done
 
 }
 
@@ -1265,6 +1431,13 @@ parse_requirements() {
       shift $#
       ;;
 
+    idiff)
+      action="idiff"
+      shift
+      dot_idiff_parse_requirements "$@"
+      shift $#
+      ;;
+
     filter)
       action="filter"
       shift
@@ -1283,6 +1456,13 @@ parse_requirements() {
       action="cd"
       shift
       dot_cd_parse_requirements "$@"
+      shift $#
+      ;;
+
+    add)
+      action="add"
+      shift
+      dot_add_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1619,8 +1799,13 @@ dot_edit_parse_requirements() {
 
       *)
 
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        if [[ -z ${args['file']+x} ]]; then
+          args['file']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
@@ -1918,15 +2103,21 @@ dot_stage_parse_requirements() {
     key="$1"
     case "$key" in
 
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
       -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
         ;;
 
       *)
 
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
 
         ;;
 
@@ -1970,15 +2161,21 @@ dot_unstage_parse_requirements() {
     key="$1"
     case "$key" in
 
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
       -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
         ;;
 
       *)
 
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
 
         ;;
 
@@ -2022,15 +2219,21 @@ dot_restore_parse_requirements() {
     key="$1"
     case "$key" in
 
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
       -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
         ;;
 
       *)
 
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
 
         ;;
 
@@ -2126,11 +2329,69 @@ dot_diff_parse_requirements() {
     key="$1"
     case "$key" in
 
-      --pick | -p)
+      --staged | -s)
 
-        args['--pick']=1
+        args['--staged']=1
         shift
         ;;
+
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
+      -?*)
+        other_args+=("$1")
+        shift
+        ;;
+
+      *)
+
+        other_args+=("$1")
+        shift
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_idiff_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_idiff_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="idiff"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
 
       --staged | -s)
 
@@ -2328,6 +2589,57 @@ dot_cd_parse_requirements() {
 
 }
 
+dot_add_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_add_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="add"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
+      -?*)
+        other_args+=("$1")
+        shift
+        ;;
+
+      *)
+
+        other_args+=("$1")
+        shift
+
+        ;;
+
+    esac
+  done
+
+  if [[ ${#other_args[@]} -eq 0 ]]; then
+    printf "missing required argument: FILES...\nusage: dot add FILES...\n" >&2
+    exit 1
+  fi
+
+}
+
 initialize() {
   version="0.1.0"
   long_usage=''
@@ -2366,9 +2678,11 @@ run() {
     "restore") dot_restore_command ;;
     "list") dot_list_command ;;
     "diff") dot_diff_command ;;
+    "idiff") dot_idiff_command ;;
     "filter") dot_filter_command ;;
     "commit") dot_commit_command ;;
     "cd") dot_cd_command ;;
+    "add") dot_add_command ;;
   esac
 }
 

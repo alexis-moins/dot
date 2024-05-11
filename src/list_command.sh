@@ -1,1 +1,1 @@
-run_git ls-files
+run_git ls-files --others --cached --modified

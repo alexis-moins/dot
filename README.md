@@ -101,9 +101,11 @@ Dotfiles Commands:
   restore     Restore unstaged files to their previous state
   list        List files from your dotfiles
   diff        Show diff with last commit
+  idiff       Show interactive diff with last commit
   filter      Filter files from your dotfiles
   commit      Commit changes
   cd          Navigate to your dotfiles in a new shell
+  add         Add files to your dotfiles
 
 Options:
   --help, -h

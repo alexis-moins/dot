@@ -1,3 +1,9 @@
-local file="$(run_git ls-files | gum filter --placeholder="Select a file")"
+local file="${args[file]}"
 
-[[ -n "${file}" ]] && $EDITOR "${DOTFILES_DIR}/${file}"
+if [[ -n "${file}" ]]; then
+    command $EDITOR "${DOTFILES_DIR}/${file}"
+else
+    local file="$(run_git ls-files --others --cached --modified | gum filter --placeholder="Select a file")"
+
+    [[ -n "${file}" ]] && $EDITOR "${DOTFILES_DIR}/${file}"
+fi
