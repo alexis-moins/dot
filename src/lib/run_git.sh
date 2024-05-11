@@ -1,4 +1,4 @@
 run_git() {
-    command git -C "${DOTFILES_DIR}" ${@}
+    command "${deps[git]}" -C "${DOTFILES_DIR}" ${@}
 }
 

@@ -1,3 +1,3 @@
 warn() {
-    echo "$(red "dot: ") ${1}"
+    echo "$(yellow "dot:") ${1}"
 }

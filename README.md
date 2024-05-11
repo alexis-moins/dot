@@ -41,8 +41,32 @@ Clone the repository then move the [dot](dot) script to anywhere in your `PATH`,
 After installing, you can follow these steps to quickly see how it works:
 
 ```bash
-# Clone your remote dotfiles
-dot clone alexis-moins/dotfiles
+# Initialize an empty dotfiles repo
+dot init
+
+# Or clone your dotfiles
+dot init git@github.com:alexis-moins/dotfiles.git
+
+# Make changes to your dotfiles
+touch ~/dotfiles/.bashrc
+
+# Create symlinks to your dotfiles in $HOME
+dot install
+
+# Show changed files
+dot status
+
+# Show git diff
+dot diff
+
+# Stage one or more files
+dot stage
+
+# Save your changes...
+dot commit "feat: add .bashrc"
+
+# ...and push them to your remote!
+dot sync
 ```
 
 ## 🚦 Usage
@@ -58,24 +82,28 @@ Usage:
   dot --version | -v
 
 Commands:
-  help      Show help about a command
-  link      Create a link to the dot script
-  unlink    Remove the link to the dot script
-  update    Update dot to the latest version
-  env       Show environment information
-  dir       Show dotfiles directory
+  help        Show help about a command
+  link        Create a link to the dot script
+  unlink      Remove the link to the dot script
+  update      Update dot to the latest version
+  env         Show environment information
+  dir         Show dotfiles directory
 
 Dotfiles Commands:
-  clone     Clone a remote git dotfiles repository
-  edit      Edit your dotfiles
-  sync      Update your dotfiles to the latest commit
-  install   Install dotfiles using symbolic links
-  clear     Remove symbolic links from /Users/alexis
-  status    Show the status of your dotfiles
-  stage     Stage files for committing later
-  restore   Unstage files
-  list      List files from your dotfiles
-  diff      Show diff with last commit
+  init        Initialize a dotfiles repository or clone one
+  edit        Edit your dotfiles
+  sync        Update your dotfiles to the latest commit
+  install     Install dotfiles using symbolic links
+  uninstall   Remove symbolic links from /Users/alexis
+  status      Show the status of your dotfiles
+  stage       Stage files for committing later
+  unstage     Unstage files
+  restore     Restore unstaged files to their previous state
+  list        List files from your dotfiles
+  diff        Show diff with last commit
+  filter      Filter files from your dotfiles
+  commit      Commit changes
+  cd          Navigate to your dotfiles in a new shell
 
 Options:
   --help, -h

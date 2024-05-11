@@ -27,17 +27,17 @@ commands:
     - name: command
       help: Help subject
 
-  - name: clone
-    help: Clone a remote git dotfiles repository
+  - name: init
+    help: Initialize a dotfiles repository or clone one
     group: Dotfiles
 
     args:
       - name: repository
-        help: "Remote repository to clone (FORMAT: <username>/<repository>)"
-        required: true
+        help: "Remote repository url"
 
     examples:
-      - dot clone alexis-moins/dotfiles
+      - dot init
+      - dot init git@github.com:<username>/dotfiles.git
 
   - name: link
     help: Create a link to the dot script
@@ -84,7 +84,8 @@ commands:
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot edit
@@ -94,7 +95,8 @@ commands:
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot sync
@@ -104,28 +106,36 @@ commands:
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot install
 
-  - name: clear
+  - name: uninstall
     help: Remove symbolic links from ${HOME}
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
-      - dot clear
+      - dot uninstall
 
   - name: status
     help: Show the status of your dotfiles
     alias: st
     group: Dotfiles
 
+    flags:
+      - short: -s
+        long: --short
+        help: Give the output in a short format
+
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot status
@@ -135,26 +145,37 @@ commands:
 
     examples:
       - dot dir
-      - cd $(dot dir)
 
   - name: stage
     help: Stage files for committing later
-    alias: add
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot stage
 
-  - name: restore
+  - name: unstage
     help: Unstage files
-    alias: [unstage, rs]
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
+
+    examples:
+      - dot unstage
+
+  - name: restore
+    help: Restore unstaged files to their previous state
+    alias: rs
+    group: Dotfiles
+
+    filters:
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot restore
@@ -165,7 +186,8 @@ commands:
     group: Dotfiles
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot list
@@ -184,9 +206,48 @@ commands:
         help: Only show diff for staged files
 
     filters:
-      - dotfiles_is_healthy
+      - dotfiles_directory
+      - dotfiles_git
 
     examples:
       - dot diff
-      - dot diff --all
+      - dot diff --pick
       - dot diff --staged
+
+  - name: filter
+    help: Filter files from your dotfiles
+    group: Dotfiles
+
+    filters:
+      - dotfiles_directory
+      - dotfiles_git
+
+    examples:
+      - dot filter
+
+  - name: commit
+    help: Commit changes
+    group: Dotfiles
+    alias: ci
+
+    args:
+      - name: message
+        help: Commit message
+
+    filters:
+      - dotfiles_directory
+      - dotfiles_git
+
+    examples:
+      - dot commit
+
+  - name: cd
+    help: Navigate to your dotfiles in a new shell
+    group: Dotfiles
+
+    filters:
+      - dotfiles_directory
+      - dotfiles_git
+
+    examples:
+      - dot cd

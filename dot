@@ -29,24 +29,28 @@ dot_usage() {
   echo
 
   printf "%s\n" "Commands:"
-  printf "  %s   Show help about a command\n" "help   "
-  printf "  %s   Create a link to the dot script\n" "link   "
-  printf "  %s   Remove the link to the dot script\n" "unlink "
-  printf "  %s   Update dot to the latest version\n" "update "
-  printf "  %s   Show environment information\n" "env    "
-  printf "  %s   Show dotfiles directory\n" "dir    "
+  printf "  %s   Show help about a command\n" "help     "
+  printf "  %s   Create a link to the dot script\n" "link     "
+  printf "  %s   Remove the link to the dot script\n" "unlink   "
+  printf "  %s   Update dot to the latest version\n" "update   "
+  printf "  %s   Show environment information\n" "env      "
+  printf "  %s   Show dotfiles directory\n" "dir      "
   echo
   printf "%s\n" "Dotfiles Commands:"
-  printf "  %s   Clone a remote git dotfiles repository\n" "clone  "
-  printf "  %s   Edit your dotfiles\n" "edit   "
-  printf "  %s   Update your dotfiles to the latest commit\n" "sync   "
-  printf "  %s   Install dotfiles using symbolic links\n" "install"
-  printf "  %s   Remove symbolic links from ${HOME}\n" "clear  "
-  printf "  %s   Show the status of your dotfiles\n" "status "
-  printf "  %s   Stage files for committing later\n" "stage  "
-  printf "  %s   Unstage files\n" "restore"
-  printf "  %s   List files from your dotfiles\n" "list   "
-  printf "  %s   Show diff with last commit\n" "diff   "
+  printf "  %s   Initialize a dotfiles repository or clone one\n" "init     "
+  printf "  %s   Edit your dotfiles\n" "edit     "
+  printf "  %s   Update your dotfiles to the latest commit\n" "sync     "
+  printf "  %s   Install dotfiles using symbolic links\n" "install  "
+  printf "  %s   Remove symbolic links from ${HOME}\n" "uninstall"
+  printf "  %s   Show the status of your dotfiles\n" "status   "
+  printf "  %s   Stage files for committing later\n" "stage    "
+  printf "  %s   Unstage files\n" "unstage  "
+  printf "  %s   Restore unstaged files to their previous state\n" "restore  "
+  printf "  %s   List files from your dotfiles\n" "list     "
+  printf "  %s   Show diff with last commit\n" "diff     "
+  printf "  %s   Filter files from your dotfiles\n" "filter   "
+  printf "  %s   Commit changes\n" "commit   "
+  printf "  %s   Navigate to your dotfiles in a new shell\n" "cd       "
   echo
 
   if [[ -n $long_usage ]]; then
@@ -111,20 +115,20 @@ dot_help_usage() {
   fi
 }
 
-dot_clone_usage() {
+dot_init_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot clone - Clone a remote git dotfiles repository\n"
+    printf "dot init - Initialize a dotfiles repository or clone one\n"
     echo
 
   else
-    printf "dot clone - Clone a remote git dotfiles repository\n"
+    printf "dot init - Initialize a dotfiles repository or clone one\n"
     echo
 
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot clone REPOSITORY\n"
-  printf "  dot clone --help | -h\n"
+  printf "  dot init [REPOSITORY]\n"
+  printf "  dot init --help | -h\n"
   echo
 
   if [[ -n $long_usage ]]; then
@@ -137,11 +141,12 @@ dot_clone_usage() {
     printf "%s\n" "Arguments:"
 
     printf "  %s\n" "REPOSITORY"
-    printf "    Remote repository to clone (FORMAT: <username>/<repository>)\n"
+    printf "    Remote repository url\n"
     echo
 
     printf "%s\n" "Examples:"
-    printf "  dot clone alexis-moins/dotfiles\n"
+    printf "  dot init\n"
+    printf "  dot init git@github.com:<username>/dotfiles.git\n"
     echo
 
   fi
@@ -376,20 +381,20 @@ dot_install_usage() {
   fi
 }
 
-dot_clear_usage() {
+dot_uninstall_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot clear - Remove symbolic links from ${HOME}\n"
+    printf "dot uninstall - Remove symbolic links from ${HOME}\n"
     echo
 
   else
-    printf "dot clear - Remove symbolic links from ${HOME}\n"
+    printf "dot uninstall - Remove symbolic links from ${HOME}\n"
     echo
 
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot clear\n"
-  printf "  dot clear --help | -h\n"
+  printf "  dot uninstall\n"
+  printf "  dot uninstall --help | -h\n"
   echo
 
   if [[ -n $long_usage ]]; then
@@ -400,7 +405,7 @@ dot_clear_usage() {
     echo
 
     printf "%s\n" "Examples:"
-    printf "  dot clear\n"
+    printf "  dot uninstall\n"
     echo
 
   fi
@@ -421,12 +426,16 @@ dot_status_usage() {
   echo
 
   printf "%s\n" "Usage:"
-  printf "  dot status\n"
+  printf "  dot status [OPTIONS]\n"
   printf "  dot status --help | -h\n"
   echo
 
   if [[ -n $long_usage ]]; then
     printf "%s\n" "Options:"
+
+    printf "  %s\n" "--short, -s"
+    printf "    Give the output in a short format\n"
+    echo
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
@@ -464,7 +473,6 @@ dot_dir_usage() {
 
     printf "%s\n" "Examples:"
     printf "  dot dir\n"
-    printf "  cd $(dot dir)\n"
     echo
 
   fi
@@ -480,9 +488,6 @@ dot_stage_usage() {
     echo
 
   fi
-
-  printf "Alias: add\n"
-  echo
 
   printf "%s\n" "Usage:"
   printf "  dot stage\n"
@@ -503,18 +508,48 @@ dot_stage_usage() {
   fi
 }
 
-dot_restore_usage() {
+dot_unstage_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot restore - Unstage files\n"
+    printf "dot unstage - Unstage files\n"
     echo
 
   else
-    printf "dot restore - Unstage files\n"
+    printf "dot unstage - Unstage files\n"
     echo
 
   fi
 
-  printf "Alias: unstage, rs\n"
+  printf "%s\n" "Usage:"
+  printf "  dot unstage\n"
+  printf "  dot unstage --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot unstage\n"
+    echo
+
+  fi
+}
+
+dot_restore_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot restore - Restore unstaged files to their previous state\n"
+    echo
+
+  else
+    printf "dot restore - Restore unstaged files to their previous state\n"
+    echo
+
+  fi
+
+  printf "Alias: rs\n"
   echo
 
   printf "%s\n" "Usage:"
@@ -602,8 +637,107 @@ dot_diff_usage() {
 
     printf "%s\n" "Examples:"
     printf "  dot diff\n"
-    printf "  dot diff --all\n"
+    printf "  dot diff --pick\n"
     printf "  dot diff --staged\n"
+    echo
+
+  fi
+}
+
+dot_filter_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot filter - Filter files from your dotfiles\n"
+    echo
+
+  else
+    printf "dot filter - Filter files from your dotfiles\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  dot filter\n"
+  printf "  dot filter --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot filter\n"
+    echo
+
+  fi
+}
+
+dot_commit_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot commit - Commit changes\n"
+    echo
+
+  else
+    printf "dot commit - Commit changes\n"
+    echo
+
+  fi
+
+  printf "Alias: ci\n"
+  echo
+
+  printf "%s\n" "Usage:"
+  printf "  dot commit [MESSAGE]\n"
+  printf "  dot commit --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    printf "  %s\n" "MESSAGE"
+    printf "    Commit message\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot commit\n"
+    echo
+
+  fi
+}
+
+dot_cd_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot cd - Navigate to your dotfiles in a new shell\n"
+    echo
+
+  else
+    printf "dot cd - Navigate to your dotfiles in a new shell\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  dot cd\n"
+  printf "  dot cd --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot cd\n"
     echo
 
   fi
@@ -668,15 +802,17 @@ filter_dotfiles() {
     run_git ls-files | gum filter --placeholder="Select a file..."
 }
 
-filter_dotfiles_is_healthy() {
+filter_dotfiles_directory() {
     if [[ ! -d "${DOTFILES_DIR}" ]]; then
-        warn "${DOTFILES_DIR} is not a directory."
-        return 1
+        warn "\$DOTFILES_DIR is not a directory."
+        warn "consider using $(yellow_underlined "dot init")."
     fi
+}
 
+filter_dotfiles_git() {
     if [[ ! -d "${DOTFILES_DIR}/.git" ]]; then
-        warn "your dotfiles directory is not a git repository."
-        return 1
+        warn "\$DOTFILES_DIR is not a git repository."
+        warn "consider using $(yellow_underlined "dot init")."
     fi
 }
 
@@ -701,7 +837,7 @@ interactive_staged_diff() {
 }
 
 error() {
-    gum log --level="error" --prefix="pm" --prefix.foreground="7" --level.foreground="1" "${1}"
+    echo "$(red "dot:") ${1}"
 }
 
 info() {
@@ -709,15 +845,15 @@ info() {
 }
 
 warn() {
-    echo "$(red "dot: ") ${1}"
+    echo "$(yellow "dot:") ${1}"
 }
 
 run_git() {
-    command git -C "${DOTFILES_DIR}" ${@}
+    command "${deps[git]}" -C "${DOTFILES_DIR}" ${@}
 }
 
 run_stow() {
-    command stow --dir="${DOTFILES_DIR}" --target="${HOME}" ${@} .
+    command "${deps[stow]}" --dir="${DOTFILES_DIR}" --target="${HOME}" ${@} .
 }
 
 dot_help_command() {
@@ -742,17 +878,23 @@ dot_help_command() {
 
 }
 
-dot_clone_command() {
+dot_init_command() {
   local repository="${args[repository]}"
 
   if [[ -d "${DOTFILES_DIR}" ]]; then
-      error "${DOTFILES_DIR} is not empty."
-      error "Remove it manually if it was intentional."
-      exit 1
+      error "\$DOTFILES_DIR is not empty."
+      return 1
   fi
 
-  command git clone "git@github.com:${repository}.git" "${DOTFILES_DIR}"
-  info "cloned dotfiles."
+  if [[ -n "${repository}" ]]; then
+      command "${deps[git]}" clone "${repository}" "${DOTFILES_DIR}"
+      info "cloned remote dotfiles."
+  else
+      command mkdir -p "${DOTFILES_DIR}"
+      run_git init
+
+      info "initialized empty dotfiles."
+  fi
 
 }
 
@@ -832,13 +974,19 @@ dot_install_command() {
 
 }
 
-dot_clear_command() {
+dot_uninstall_command() {
   run_stow --delete --verbose
 
 }
 
 dot_status_command() {
-  run_git status --short
+  local short="${args[--short]}"
+
+  if [[ -n "${short}" ]]; then
+      run_git status --short
+  else
+      run_git status
+  fi
 
 }
 
@@ -861,17 +1009,31 @@ dot_stage_command() {
 
 }
 
-dot_restore_command() {
+dot_unstage_command() {
   candidates="$(run_git diff --cached --name-only)"
 
-  [[ -z "${candidates}" ]] && info "no more changes to restore." && return 0
+  [[ -z "${candidates}" ]] && info "no more changes to unstage." && return 0
 
   local files="$(echo "${candidates}" \
-      | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to restore" )"
+      | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to unstage" )"
 
   [[ -z "${files}" ]] && return 0
 
   run_git restore --staged "$(echo "${files}" | tr '\n' ' ')"
+
+}
+
+dot_restore_command() {
+  candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
+
+  [[ -z "${candidates}" ]] && info "no more changes to restore." && return 0
+
+  local files="$(echo "${candidates}" \
+      | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Files to restore...")"
+
+  [[ -z "${files}" ]] && return 0
+
+  run_git restore "$(echo "${files}" | tr '\n' ' ')"
 
 }
 
@@ -897,6 +1059,34 @@ dot_diff_command() {
           run_git diff --staged
       fi
   fi
+
+}
+
+dot_filter_command() {
+  filter_dotfiles
+
+}
+
+dot_commit_command() {
+  local message="${args[message]}"
+
+  if [[ -n "${message}" ]]; then
+      "${deps[git]}" -C "${DOTFILES_DIR}" commit -m "${message}"
+  else
+      run_git commit
+  fi
+
+}
+
+dot_cd_command() {
+  echo "# this file is located in 'src/cd_command.sh'"
+  echo "# code for 'dot cd' goes here"
+  echo "# you can edit it freely and regenerate (it will not be overwritten)"
+  inspect_args
+
+  command cd "${DOTFILES_DIR}"
+
+  command "${SHELL}"
 
 }
 
@@ -963,10 +1153,10 @@ parse_requirements() {
       shift $#
       ;;
 
-    clone)
-      action="clone"
+    init)
+      action="init"
       shift
-      dot_clone_parse_requirements "$@"
+      dot_init_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1019,10 +1209,10 @@ parse_requirements() {
       shift $#
       ;;
 
-    clear)
-      action="clear"
+    uninstall)
+      action="uninstall"
       shift
-      dot_clear_parse_requirements "$@"
+      dot_uninstall_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1040,14 +1230,21 @@ parse_requirements() {
       shift $#
       ;;
 
-    stage | add)
+    stage)
       action="stage"
       shift
       dot_stage_parse_requirements "$@"
       shift $#
       ;;
 
-    restore | unstage | rs)
+    unstage)
+      action="unstage"
+      shift
+      dot_unstage_parse_requirements "$@"
+      shift $#
+      ;;
+
+    restore | rs)
       action="restore"
       shift
       dot_restore_parse_requirements "$@"
@@ -1065,6 +1262,27 @@ parse_requirements() {
       action="diff"
       shift
       dot_diff_parse_requirements "$@"
+      shift $#
+      ;;
+
+    filter)
+      action="filter"
+      shift
+      dot_filter_parse_requirements "$@"
+      shift $#
+      ;;
+
+    commit | ci)
+      action="commit"
+      shift
+      dot_commit_parse_requirements "$@"
+      shift $#
+      ;;
+
+    cd)
+      action="cd"
+      shift
+      dot_cd_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1146,13 +1364,13 @@ dot_help_parse_requirements() {
 
 }
 
-dot_clone_parse_requirements() {
+dot_init_parse_requirements() {
 
   while [[ $# -gt 0 ]]; do
     case "${1:-}" in
       --help | -h)
         long_usage=yes
-        dot_clone_usage
+        dot_init_usage
         exit
         ;;
 
@@ -1163,7 +1381,7 @@ dot_clone_parse_requirements() {
     esac
   done
 
-  action="clone"
+  action="init"
 
   while [[ $# -gt 0 ]]; do
     key="$1"
@@ -1188,11 +1406,6 @@ dot_clone_parse_requirements() {
 
     esac
   done
-
-  if [[ -z ${args['repository']+x} ]]; then
-    printf "missing required argument: REPOSITORY\nusage: dot clone REPOSITORY\n" >&2
-    exit 1
-  fi
 
 }
 
@@ -1414,7 +1627,13 @@ dot_edit_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1460,7 +1679,13 @@ dot_sync_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1506,7 +1731,13 @@ dot_install_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1514,13 +1745,13 @@ dot_install_parse_requirements() {
 
 }
 
-dot_clear_parse_requirements() {
+dot_uninstall_parse_requirements() {
 
   while [[ $# -gt 0 ]]; do
     case "${1:-}" in
       --help | -h)
         long_usage=yes
-        dot_clear_usage
+        dot_uninstall_usage
         exit
         ;;
 
@@ -1531,7 +1762,7 @@ dot_clear_parse_requirements() {
     esac
   done
 
-  action="clear"
+  action="uninstall"
 
   while [[ $# -gt 0 ]]; do
     key="$1"
@@ -1552,7 +1783,13 @@ dot_clear_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1583,6 +1820,12 @@ dot_status_parse_requirements() {
     key="$1"
     case "$key" in
 
+      --short | -s)
+
+        args['--short']=1
+        shift
+        ;;
+
       -?*)
         printf "invalid option: %s\n" "$key" >&2
         exit 1
@@ -1598,7 +1841,13 @@ dot_status_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1684,7 +1933,65 @@ dot_stage_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_unstage_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_unstage_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="unstage"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1730,7 +2037,13 @@ dot_restore_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1776,7 +2089,13 @@ dot_list_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1834,7 +2153,174 @@ dot_diff_parse_requirements() {
     esac
   done
 
-  filter_error=$(filter_dotfiles_is_healthy)
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_filter_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_filter_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="filter"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_commit_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_commit_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="commit"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        if [[ -z ${args['message']+x} ]]; then
+          args['message']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
+dot_cd_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_cd_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="cd"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
   if [[ -n $filter_error ]]; then
     echo "$filter_error" >&2
     exit 1
@@ -1864,7 +2350,7 @@ run() {
 
   case "$action" in
     "help") dot_help_command ;;
-    "clone") dot_clone_command ;;
+    "init") dot_init_command ;;
     "link") dot_link_command ;;
     "unlink") dot_unlink_command ;;
     "update") dot_update_command ;;
@@ -1872,13 +2358,17 @@ run() {
     "edit") dot_edit_command ;;
     "sync") dot_sync_command ;;
     "install") dot_install_command ;;
-    "clear") dot_clear_command ;;
+    "uninstall") dot_uninstall_command ;;
     "status") dot_status_command ;;
     "dir") dot_dir_command ;;
     "stage") dot_stage_command ;;
+    "unstage") dot_unstage_command ;;
     "restore") dot_restore_command ;;
     "list") dot_list_command ;;
     "diff") dot_diff_command ;;
+    "filter") dot_filter_command ;;
+    "commit") dot_commit_command ;;
+    "cd") dot_cd_command ;;
   esac
 }
 

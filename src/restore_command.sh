@@ -1,10 +1,10 @@
-candidates="$(run_git diff --cached --name-only)"
+candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
 
 [[ -z "${candidates}" ]] && info "no more changes to restore." && return 0
 
 local files="$(echo "${candidates}" \
-    | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to restore" )"
+    | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Files to restore...")"
 
 [[ -z "${files}" ]] && return 0
 
-run_git restore --staged "$(echo "${files}" | tr '\n' ' ')"
+run_git restore "$(echo "${files}" | tr '\n' ' ')"
