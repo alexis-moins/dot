@@ -4,7 +4,7 @@
 
 </div>
 
-`dot` is a bash script allowing users to manage their dotfiles using a centralized cli.
+`dot` is a bash script allowing users to manage their dotfiles.
 
 ## Prerequisites
 
