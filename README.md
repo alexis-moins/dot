@@ -50,17 +50,17 @@ dot init git@github.com:alexis-moins/dotfiles.git
 # Add a new config file to your dotfiles
 dot add ~/.bashrc
 
+# Ensure the file was added
+dot status
+
+# Show git diff
+dot diff .bashrc
+
 # Remove the original file
 rm ~/.bashrc
 
 # Create symlinks to your dotfiles in $HOME
 dot install
-
-# Show changed files
-dot status
-
-# Show git diff
-dot diff .bashrc
 
 # Stage one or more files
 dot stage .bashrc
