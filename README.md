@@ -47,8 +47,11 @@ dot init
 # Or clone your dotfiles
 dot init git@github.com:alexis-moins/dotfiles.git
 
-# Make changes to your dotfiles
-touch ~/dotfiles/.bashrc
+# Add a new config file to your dotfiles
+dot add ~/.bashrc
+
+# Remove the original file
+rm ~/.bashrc
 
 # Create symlinks to your dotfiles in $HOME
 dot install
@@ -57,10 +60,10 @@ dot install
 dot status
 
 # Show git diff
-dot diff
+dot diff .bashrc
 
 # Stage one or more files
-dot stage
+dot stage .bashrc
 
 # Save your changes...
 dot commit "feat: add .bashrc"
