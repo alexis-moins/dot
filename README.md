@@ -1,6 +1,6 @@
 <div align='center'>
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 
 </div>
 
@@ -95,20 +95,22 @@ Commands:
 Dotfiles Commands:
   init        Initialize a dotfiles repository or clone one
   edit        Edit your dotfiles
-  sync        Update your dotfiles to the latest commit
   install     Install dotfiles using symbolic links
   uninstall   Remove symbolic links from /Users/alexis
+  list        List files from your dotfiles
+  filter      Filter files from your dotfiles
+  cd          Navigate to your dotfiles in a new shell
+  add         Add files to your dotfiles
+
+Git Commands:
+  sync        Update your dotfiles to the latest commit
   status      Show the status of your dotfiles
   stage       Stage files for committing later
   unstage     Unstage files
   restore     Restore unstaged files to their previous state
-  list        List files from your dotfiles
   diff        Show diff with last commit
   idiff       Show interactive diff with last commit
-  filter      Filter files from your dotfiles
   commit      Commit changes
-  cd          Navigate to your dotfiles in a new shell
-  add         Add files to your dotfiles
 
 Options:
   --help, -h

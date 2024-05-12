@@ -39,20 +39,22 @@ dot_usage() {
   printf "%s\n" "Dotfiles Commands:"
   printf "  %s   Initialize a dotfiles repository or clone one\n" "init     "
   printf "  %s   Edit your dotfiles\n" "edit     "
-  printf "  %s   Update your dotfiles to the latest commit\n" "sync     "
   printf "  %s   Install dotfiles using symbolic links\n" "install  "
   printf "  %s   Remove symbolic links from ${HOME}\n" "uninstall"
+  printf "  %s   List files from your dotfiles\n" "list     "
+  printf "  %s   Filter files from your dotfiles\n" "filter   "
+  printf "  %s   Navigate to your dotfiles in a new shell\n" "cd       "
+  printf "  %s   Add files to your dotfiles\n" "add      "
+  echo
+  printf "%s\n" "Git Commands:"
+  printf "  %s   Update your dotfiles to the latest commit\n" "sync     "
   printf "  %s   Show the status of your dotfiles\n" "status   "
   printf "  %s   Stage files for committing later\n" "stage    "
   printf "  %s   Unstage files\n" "unstage  "
   printf "  %s   Restore unstaged files to their previous state\n" "restore  "
-  printf "  %s   List files from your dotfiles\n" "list     "
   printf "  %s   Show diff with last commit\n" "diff     "
   printf "  %s   Show interactive diff with last commit\n" "idiff    "
-  printf "  %s   Filter files from your dotfiles\n" "filter   "
   printf "  %s   Commit changes\n" "commit   "
-  printf "  %s   Navigate to your dotfiles in a new shell\n" "cd       "
-  printf "  %s   Add files to your dotfiles\n" "add      "
   echo
 
   if [[ -n $long_usage ]]; then
@@ -275,7 +277,7 @@ dot_env_usage() {
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot env\n"
+  printf "  dot env [VARIABLE]\n"
   printf "  dot env --help | -h\n"
   echo
 
@@ -284,6 +286,13 @@ dot_env_usage() {
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    printf "  %s\n" "VARIABLE"
+    printf "    Name of the environment variable to show\n"
+    printf "    Allowed: DOT_INSTALL_DIR, DOTFILES_DIR\n"
     echo
 
     printf "%s\n" "Examples:"
@@ -1050,8 +1059,14 @@ dot_update_command() {
 }
 
 dot_env_command() {
-  echo "DOT_INSTALL_DIR=${DOT_INSTALL_DIR}"
-  echo "DOTFILES_DIR=${DOTFILES_DIR}"
+  local variable="${args[variable]}"
+
+  if [[ -n "${variable}" ]]; then
+      echo "${!variable}"
+  else
+      echo "DOT_INSTALL_DIR=${DOT_INSTALL_DIR}"
+      echo "DOTFILES_DIR=${DOTFILES_DIR}"
+  fi
 
 }
 
@@ -1759,13 +1774,23 @@ dot_env_parse_requirements() {
 
       *)
 
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        if [[ -z ${args['variable']+x} ]]; then
+          args['variable']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  if [[ -n ${args['variable']:-} ]] && [[ ! ${args['variable']:-} =~ ^(DOT_INSTALL_DIR|DOTFILES_DIR)$ ]]; then
+    printf "%s\n" "variable must be one of: DOT_INSTALL_DIR, DOTFILES_DIR" >&2
+    exit 1
+  fi
 
 }
 

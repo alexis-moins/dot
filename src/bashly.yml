@@ -1,6 +1,6 @@
 name: dot
 help: dotfiles manager
-version: 0.1.0
+version: 1.1.0
 
 environment_variables:
   - name: EDITOR
@@ -76,6 +76,11 @@ commands:
   - name: env
     help: Show environment information
 
+    args:
+      - name: variable
+        help: Name of the environment variable to show
+        allowed: [DOT_INSTALL_DIR, DOTFILES_DIR]
+
     examples:
       - dot env
 
@@ -96,7 +101,7 @@ commands:
 
   - name: sync
     help: Update your dotfiles to the latest commit
-    group: Dotfiles
+    group: Git
 
     filters:
       - dotfiles_directory
@@ -130,7 +135,7 @@ commands:
   - name: status
     help: Show the status of your dotfiles
     alias: st
-    group: Dotfiles
+    group: Git
 
     flags:
       - short: -s
@@ -152,7 +157,7 @@ commands:
 
   - name: stage
     help: Stage files for committing later
-    group: Dotfiles
+    group: Git
 
     catch_all:
       label: files
@@ -167,7 +172,7 @@ commands:
 
   - name: unstage
     help: Unstage files
-    group: Dotfiles
+    group: Git
 
     catch_all:
       label: files
@@ -183,7 +188,7 @@ commands:
   - name: restore
     help: Restore unstaged files to their previous state
     alias: rs
-    group: Dotfiles
+    group: Git
 
     catch_all:
       label: files
@@ -210,7 +215,7 @@ commands:
 
   - name: diff
     help: Show diff with last commit
-    group: Dotfiles
+    group: Git
 
     catch_all:
       label: files
@@ -231,7 +236,7 @@ commands:
 
   - name: idiff
     help: Show interactive diff with last commit
-    group: Dotfiles
+    group: Git
 
     flags:
       - short: -s
@@ -259,7 +264,7 @@ commands:
 
   - name: commit
     help: Commit changes
-    group: Dotfiles
+    group: Git
     alias: ci
 
     args:
