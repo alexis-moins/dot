@@ -131,12 +131,16 @@ dot_init_usage() {
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot init [REPOSITORY]\n"
+  printf "  dot init [REPOSITORY] [OPTIONS]\n"
   printf "  dot init --help | -h\n"
   echo
 
   if [[ -n $long_usage ]]; then
     printf "%s\n" "Options:"
+
+    printf "  %s\n" "--force, -f"
+    printf "    Overwrite existing recipe book\n"
+    echo
 
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
@@ -986,21 +990,22 @@ dot_help_command() {
 }
 
 dot_init_command() {
+  local force="${args[--force]}"
   local repository="${args[repository]}"
 
-  if [[ -d "${DOTFILES_DIR}" ]]; then
+  if [[ -d "${DOTFILES_DIR}" ]] && [[ -z "${force}" ]]; then
       error "\$DOTFILES_DIR is not empty."
-      return 1
+      exit 1
   fi
 
   if [[ -n "${repository}" ]]; then
       command "${deps[git]}" clone "${repository}" "${DOTFILES_DIR}"
-      info "cloned remote dotfiles."
+      success "cloned remote dotfiles"
   else
       command mkdir -p "${DOTFILES_DIR}"
       run_git init
 
-      info "initialized empty dotfiles."
+      success "initialized empty dotfiles"
   fi
 
 }
@@ -1581,6 +1586,12 @@ dot_init_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
+
+      --force | -f)
+
+        args['--force']=1
+        shift
+        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -2666,7 +2677,7 @@ dot_add_parse_requirements() {
 }
 
 initialize() {
-  version="0.1.0"
+  version="1.1.0"
   long_usage=''
   set -e
 

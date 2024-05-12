@@ -4,7 +4,7 @@ version: 1.1.0
 
 environment_variables:
   - name: EDITOR
-    help: Editor to use for interactive commands
+    help: Editor used for interactive commands
     default: vim
 
   - name: DOT_INSTALL_DIR
@@ -33,7 +33,12 @@ commands:
 
     args:
       - name: repository
-        help: "Remote repository url"
+        help: Remote repository url
+
+    flags:
+      - short: -f
+        long: --force
+        help: Overwrite existing recipe book
 
     examples:
       - dot init
@@ -100,7 +105,7 @@ commands:
       - dot edit
 
   - name: sync
-    help: Update your dotfiles to the latest commit
+    help: Update your dotfiles
     group: Git
 
     filters:
@@ -156,7 +161,7 @@ commands:
       - dot dir
 
   - name: stage
-    help: Stage files for committing later
+    help: Stage files
     group: Git
 
     catch_all:
@@ -186,7 +191,7 @@ commands:
       - dot unstage
 
   - name: restore
-    help: Restore unstaged files to their previous state
+    help: Restore unstaged files (undo changes)
     alias: rs
     group: Git
 
