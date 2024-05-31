@@ -2,6 +2,6 @@
 #
 # Install dot script
 #
-destination="${HOME}/.local/bin"
+destination="${1:-${HOME}/.local/bin}"
 
 DOT_INSTALL_DIR="$(pwd)" ./dot link "${destination}"
