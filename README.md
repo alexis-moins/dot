@@ -19,16 +19,16 @@
 ### Using dot
 
 Clone the repository in the recommended location
-```console
+```bash
 git clone git@github.com:alexis-moins/dot.git ~/.dot
 ```
 
 Go into the install directory and execute the [install](install) script:
-```console
+```bash
 ./install
 ```
 
-The last command creates a symbolic link to the `dot` script in the `~/.local/bin/` directory (you can also change the link destination path). 
+The last command creates a symbolic link to the `dot` script in the `~/.local/bin/` directory (you can also change the link destination path by passing it as an argument to the install script). 
 
 > If you did not clone the repository in `~/.dot`, don't forget to set the `DOT_INSTALL_DIR` environment variable globally afterwards!
 
