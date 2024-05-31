@@ -1,6 +1,6 @@
 <div align='center'>
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
 
 </div>
 
@@ -19,13 +19,13 @@
 ### Using dot
 
 Clone the repository in the recommended location
-```bash
+```console
 git clone git@github.com:alexis-moins/dot.git ~/.dot
 ```
 
-Go into the install directory and let dot take care of the rest!
-```bash
-DOT_INSTALL_DIR=$(pwd) ./dot link
+Go into the install directory and execute the [install](install) script:
+```console
+./install
 ```
 
 The last command creates a symbolic link to the `dot` script in the `~/.local/bin/` directory (you can also change the link destination path). 

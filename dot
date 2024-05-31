@@ -47,11 +47,11 @@ dot_usage() {
   printf "  %s   Add files to your dotfiles\n" "add      "
   echo
   printf "%s\n" "Git Commands:"
-  printf "  %s   Update your dotfiles to the latest commit\n" "sync     "
+  printf "  %s   Update your dotfiles\n" "sync     "
   printf "  %s   Show the status of your dotfiles\n" "status   "
-  printf "  %s   Stage files for committing later\n" "stage    "
+  printf "  %s   Stage files\n" "stage    "
   printf "  %s   Unstage files\n" "unstage  "
-  printf "  %s   Restore unstaged files to their previous state\n" "restore  "
+  printf "  %s   Restore unstaged files (undo changes)\n" "restore  "
   printf "  %s   Show diff with last commit\n" "diff     "
   printf "  %s   Show interactive diff with last commit\n" "idiff    "
   printf "  %s   Commit changes\n" "commit   "
@@ -70,7 +70,7 @@ dot_usage() {
     printf "%s\n" "Environment Variables:"
 
     printf "  %s\n" "EDITOR"
-    printf "    Editor to use for interactive commands\n"
+    printf "    Editor used for interactive commands\n"
     printf "    Default: vim\n"
     echo
 
@@ -344,11 +344,11 @@ dot_edit_usage() {
 
 dot_sync_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot sync - Update your dotfiles to the latest commit\n"
+    printf "dot sync - Update your dotfiles\n"
     echo
 
   else
-    printf "dot sync - Update your dotfiles to the latest commit\n"
+    printf "dot sync - Update your dotfiles\n"
     echo
 
   fi
@@ -501,11 +501,11 @@ dot_dir_usage() {
 
 dot_stage_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot stage - Stage files for committing later\n"
+    printf "dot stage - Stage files\n"
     echo
 
   else
-    printf "dot stage - Stage files for committing later\n"
+    printf "dot stage - Stage files\n"
     echo
 
   fi
@@ -573,11 +573,11 @@ dot_unstage_usage() {
 
 dot_restore_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot restore - Restore unstaged files to their previous state\n"
+    printf "dot restore - Restore unstaged files (undo changes)\n"
     echo
 
   else
-    printf "dot restore - Restore unstaged files to their previous state\n"
+    printf "dot restore - Restore unstaged files (undo changes)\n"
     echo
 
   fi
@@ -925,20 +925,20 @@ filter_dotfiles_git() {
 
 interactive_diff() {
     candidates="$(run_git ls-files -mo --exclude-standard --full-name )"
-    [[ -z "${candidates}" ]] && info 'no changes to diff.' && return 1
+    [[ -z "${candidates}" ]] && info 'no changes to diff' && return 0
 
     local files="$(echo "${candidates}" | gum filter --placeholder="Select files to diff" --no-limit)"
-    [[ -z "${files}" ]] && return 1
+    [[ -z "${files}" ]] && return 0
 
     run_git diff "${files}"
 }
 
 interactive_staged_diff() {
     candidates="$(run_git diff --cached --name-only)"
-    [[ -z "${candidates}" ]] && info 'no staged changes to diff.' && return 1
+    [[ -z "${candidates}" ]] && info 'no staged changes to diff' && return 0
 
     local files="$(echo "${candidates}" | gum filter --placeholder="Select files to diff" --no-limit)"
-    [[ -z "${files}" ]] && return 1
+    [[ -z "${files}" ]] && return 0
 
     run_git diff --staged "${files}"
 }
@@ -994,8 +994,12 @@ dot_init_command() {
   local repository="${args[repository]}"
 
   if [[ -d "${DOTFILES_DIR}" ]] && [[ -z "${force}" ]]; then
-      error "\$DOTFILES_DIR is not empty."
-      exit 1
+      if [[ -z "${force}" ]]; then
+          error "\$DOTFILES_DIR is not empty."
+          exit 1
+      else
+          command rm -rf "${DOTFILES_DIR}"
+      fi
   fi
 
   if [[ -n "${repository}" ]]; then
@@ -1034,7 +1038,7 @@ dot_link_command() {
   local executable=`test -n "${copy}" && echo "cp" || echo "ln -s"`
 
   command ${executable} "${source}/dot" "${path}/dot"
-  info "link created in ${path}."
+  success "link created in ${path}."
 
 }
 
@@ -1042,9 +1046,9 @@ dot_unlink_command() {
   local path="${args[path]}"
 
   if [[ -f "${path}/dot" ]]; then
-      run_silent rm "${path}/dot"
+      command rm "${path}/dot"
 
-      info "link removed from ${path}."
+      success "link removed from ${path}."
   else
       error "no link found in ${path}."
       exit 1
@@ -1121,54 +1125,65 @@ dot_dir_command() {
 
 dot_stage_command() {
   if [[ -n "${other_args[*]}" ]]; then
-      run_git add ${other_args[*]} && success "staged file(s) - ${other_args[*]}"
+      run_git add ${other_args[*]} && success "staged ${other_args[*]}"
   else
       candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
 
-      [[ -z "${candidates}" ]] && info "no more changes to stage." && return 0
+      [[ -z "${candidates}" ]] && info "no changes to stage" && exit 0
 
       local files="$(echo "${candidates}" \
-          | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to stage" )"
+          | tr ' ' '\n' \
+          | gum filter --no-limit --fuzzy --placeholder="Select files to stage" )"
 
-      [[ -z "${files}" ]] && return 0
+      [[ -z "${files}" ]] && exit 0
 
-      run_git add "$(echo "${files}" | tr '\n' ' ')"
+      files="$(echo "${files}" | tr '\n' ' ')"
+
+      run_git add ${files} \
+          && success "staged ${files}"
   fi
 
 }
 
 dot_unstage_command() {
   if [[ -n "${other_args[*]}" ]]; then
-      run_git restore --staged ${other_args[*]} && success "unstaged file(s) - ${other_args[*]}"
+      run_git restore --staged ${other_args[*]} && success "unstaged ${other_args[*]}"
   else
       candidates="$(run_git diff --cached --name-only)"
 
-      [[ -z "${candidates}" ]] && info "no more changes to unstage." && return 0
+      [[ -z "${candidates}" ]] && info "no changes to unstage" && return 0
 
       local files="$(echo "${candidates}" \
-          | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Select files to unstage" )"
+          | tr ' ' '\n' \
+          | gum filter --no-limit --fuzzy --placeholder="Select files to unstage" )"
 
       [[ -z "${files}" ]] && return 0
 
-      run_git restore --staged "$(echo "${files}" | tr '\n' ' ')"
+      files="$(echo "${files}" | tr '\n' ' ')"
+
+      run_git restore --staged ${files} \
+          && success "unstaged ${files}"
   fi
 
 }
 
 dot_restore_command() {
   if [[ -n "${other_args[*]}" ]]; then
-      run_git restore ${other_args[*]} && success "restored file(s) - ${other_args[*]}"
+      run_git restore ${other_args[*]} && success "restored ${other_args[*]}"
   else
       candidates="$(run_git ls-files -mo --exclude-standard --full-name)"
 
-      [[ -z "${candidates}" ]] && info "no more changes to restore." && return 0
+      [[ -z "${candidates}" ]] && info "no changes to restore" && exit 0
 
       local files="$(echo "${candidates}" \
-          | tr ' ' '\n' | gum filter --no-limit --fuzzy --placeholder="Files to restore...")"
+          | tr ' ' '\n' \
+          | gum filter --no-limit --fuzzy --placeholder="Files to restore...")"
 
-      [[ -z "${files}" ]] && return 0
+      [[ -z "${files}" ]] && exit 0
 
-      run_git restore "$(echo "${files}" | tr '\n' ' ')"
+      files="$(echo "${files}" | tr '\n' ' ')"
+
+      run_git restore ${files} && success "restored ${files}"
   fi
 
 }
@@ -2677,7 +2692,7 @@ dot_add_parse_requirements() {
 }
 
 initialize() {
-  version="1.1.0"
+  version="1.2.0"
   long_usage=''
   set -e
 

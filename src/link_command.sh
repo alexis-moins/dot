@@ -21,4 +21,4 @@ fi
 local executable=`test -n "${copy}" && echo "cp" || echo "ln -s"`
 
 command ${executable} "${source}/dot" "${path}/dot"
-info "link created in ${path}."
+success "link created in ${path}."

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Install dot script
+#
+destination="${HOME}/.local/bin"
+
+DOT_INSTALL_DIR="$(pwd)" ./dot link "${destination}"
