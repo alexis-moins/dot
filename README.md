@@ -28,7 +28,7 @@ Go into the install directory and execute the [install](install) script:
 ./install
 ```
 
-The last command creates a symbolic link to the `dot` script in the `~/.local/bin/` directory (you can also change the link destination path by passing it as an argument to the install script). 
+The last command creates a symbolic link to the `dot` script in the `~/.local/bin/` directory (you can also change the link destination path by passing it as an argument to the install script).
 
 > If you did not clone the repository in `~/.dot`, don't forget to set the `DOT_INSTALL_DIR` environment variable globally afterwards!
 
