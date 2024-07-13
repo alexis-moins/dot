@@ -47,14 +47,13 @@ dot_usage() {
   printf "  %s   Add files to your dotfiles\n" "add      "
   echo
   printf "%s\n" "Git Commands:"
-  printf "  %s   Update your dotfiles\n" "sync     "
   printf "  %s   Show the status of your dotfiles\n" "status   "
   printf "  %s   Stage files\n" "stage    "
   printf "  %s   Unstage files\n" "unstage  "
   printf "  %s   Restore unstaged files (undo changes)\n" "restore  "
-  printf "  %s   Show diff with last commit\n" "diff     "
-  printf "  %s   Show interactive diff with last commit\n" "idiff    "
+  printf "  %s   Show interactive diff with last commit\n" "diff     "
   printf "  %s   Commit changes\n" "commit   "
+  printf "  %s   Run git commands within your dotfiles\n" "git      "
   echo
 
   if [[ -n $long_usage ]]; then
@@ -342,36 +341,6 @@ dot_edit_usage() {
   fi
 }
 
-dot_sync_usage() {
-  if [[ -n $long_usage ]]; then
-    printf "dot sync - Update your dotfiles\n"
-    echo
-
-  else
-    printf "dot sync - Update your dotfiles\n"
-    echo
-
-  fi
-
-  printf "%s\n" "Usage:"
-  printf "  dot sync\n"
-  printf "  dot sync --help | -h\n"
-  echo
-
-  if [[ -n $long_usage ]]; then
-    printf "%s\n" "Options:"
-
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-    printf "%s\n" "Examples:"
-    printf "  dot sync\n"
-    echo
-
-  fi
-}
-
 dot_install_usage() {
   if [[ -n $long_usage ]]; then
     printf "dot install - Install dotfiles using symbolic links\n"
@@ -645,17 +614,17 @@ dot_list_usage() {
 
 dot_diff_usage() {
   if [[ -n $long_usage ]]; then
-    printf "dot diff - Show diff with last commit\n"
+    printf "dot diff - Show interactive diff with last commit\n"
     echo
 
   else
-    printf "dot diff - Show diff with last commit\n"
+    printf "dot diff - Show interactive diff with last commit\n"
     echo
 
   fi
 
   printf "%s\n" "Usage:"
-  printf "  dot diff [OPTIONS] [FILES...]\n"
+  printf "  dot diff [OPTIONS]\n"
   printf "  dot diff --help | -h\n"
   echo
 
@@ -670,50 +639,9 @@ dot_diff_usage() {
     printf "    Show this help\n"
     echo
 
-    printf "%s\n" "Arguments:"
-
-    echo "  FILES..."
-    printf "    Files to diff (relative to \$DOTFILES_DIR)\n"
-    echo
-
     printf "%s\n" "Examples:"
     printf "  dot diff\n"
     printf "  dot diff --staged\n"
-    echo
-
-  fi
-}
-
-dot_idiff_usage() {
-  if [[ -n $long_usage ]]; then
-    printf "dot idiff - Show interactive diff with last commit\n"
-    echo
-
-  else
-    printf "dot idiff - Show interactive diff with last commit\n"
-    echo
-
-  fi
-
-  printf "%s\n" "Usage:"
-  printf "  dot idiff [OPTIONS]\n"
-  printf "  dot idiff --help | -h\n"
-  echo
-
-  if [[ -n $long_usage ]]; then
-    printf "%s\n" "Options:"
-
-    printf "  %s\n" "--staged, -s"
-    printf "    Only show diff for staged files\n"
-    echo
-
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-    printf "%s\n" "Examples:"
-    printf "  dot idiff\n"
-    printf "  dot idiff --staged\n"
     echo
 
   fi
@@ -845,6 +773,42 @@ dot_add_usage() {
 
     echo "  FILES..."
     printf "    Files\n"
+    echo
+
+  fi
+}
+
+dot_git_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "dot git - Run git commands within your dotfiles\n"
+    echo
+
+  else
+    printf "dot git - Run git commands within your dotfiles\n"
+    echo
+
+  fi
+
+  printf "%s\n" "Usage:"
+  printf "  dot git COMMANDS...\n"
+  printf "  dot git --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    printf "%s\n" "Arguments:"
+
+    echo "  COMMANDS..."
+    printf "    Commands\n"
+    echo
+
+    printf "%s\n" "Examples:"
+    printf "  dot git switch -c <new-branch>\n"
     echo
 
   fi
@@ -1021,24 +985,24 @@ dot_link_command() {
   local source="${DOT_INSTALL_DIR}"
 
   if [[ -f "${path}/dot" ]]; then
-      error "there is already a link in ${path}."
+      error "there is already a link in ${path}"
       exit 1
   fi
 
   if [[ ! -d "${source}" ]]; then
-      error "source directory ${source} does not exist."
+      error "source directory ${source} does not exist"
       exit 1
   fi
 
   if [[ ! -f "${source}/dot" ]]; then
-      error "script 'dot' not found in ${source}."
+      error "script 'dot' not found in ${source}"
       exit 1
   fi
 
   local executable=`test -n "${copy}" && echo "cp" || echo "ln -s"`
 
   command ${executable} "${source}/dot" "${path}/dot"
-  success "link created in ${path}."
+  success "link created in ${path}"
 
 }
 
@@ -1048,9 +1012,9 @@ dot_unlink_command() {
   if [[ -f "${path}/dot" ]]; then
       command rm "${path}/dot"
 
-      success "link removed from ${path}."
+      success "link removed from ${path}"
   else
-      error "no link found in ${path}."
+      error "no link found in ${path}"
       exit 1
   fi
 
@@ -1089,11 +1053,6 @@ dot_edit_command() {
 
       [[ -n "${file}" ]] && $EDITOR "${DOTFILES_DIR}/${file}"
   fi
-
-}
-
-dot_sync_command() {
-  run_git pull --rebase && run_git push
 
 }
 
@@ -1194,26 +1153,6 @@ dot_list_command() {
 }
 
 dot_diff_command() {
-  local files="${other_args[*]}"
-  local staged="${args[--staged]}"
-
-  if [[ -n "${files}" ]]; then
-      if [[ -n "${staged}" ]]; then
-          run_git diff --staged ${files}
-      else
-          run_git diff ${files}
-      fi
-  else
-      if [[ -z "${staged}" ]]; then
-          run_git diff
-      else
-          run_git diff --staged
-      fi
-  fi
-
-}
-
-dot_idiff_command() {
   local staged="${args[--staged]}"
 
   if [[ -n "${staged}" ]]; then
@@ -1288,6 +1227,11 @@ dot_add_command() {
               && success "${relative_path} added to your dotfiles"
       fi
   done
+
+}
+
+dot_git_command() {
+  run_git ${other_args[*]}
 
 }
 
@@ -1396,13 +1340,6 @@ parse_requirements() {
       shift $#
       ;;
 
-    sync)
-      action="sync"
-      shift
-      dot_sync_parse_requirements "$@"
-      shift $#
-      ;;
-
     install)
       action="install"
       shift
@@ -1466,13 +1403,6 @@ parse_requirements() {
       shift $#
       ;;
 
-    idiff)
-      action="idiff"
-      shift
-      dot_idiff_parse_requirements "$@"
-      shift $#
-      ;;
-
     filter)
       action="filter"
       shift
@@ -1498,6 +1428,13 @@ parse_requirements() {
       action="add"
       shift
       dot_add_parse_requirements "$@"
+      shift $#
+      ;;
+
+    git)
+      action="git"
+      shift
+      dot_git_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1857,58 +1794,6 @@ dot_edit_parse_requirements() {
           printf "invalid argument: %s\n" "$key" >&2
           exit 1
         fi
-
-        ;;
-
-    esac
-  done
-
-  filter_error=$(filter_dotfiles_directory)
-  if [[ -n $filter_error ]]; then
-    echo "$filter_error" >&2
-    exit 1
-  fi
-
-  filter_error=$(filter_dotfiles_git)
-  if [[ -n $filter_error ]]; then
-    echo "$filter_error" >&2
-    exit 1
-  fi
-
-}
-
-dot_sync_parse_requirements() {
-
-  while [[ $# -gt 0 ]]; do
-    case "${1:-}" in
-      --help | -h)
-        long_usage=yes
-        dot_sync_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  action="sync"
-
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
 
         ;;
 
@@ -2386,70 +2271,6 @@ dot_diff_parse_requirements() {
         shift
         ;;
 
-      --)
-        shift
-        other_args+=("$@")
-        break
-        ;;
-
-      -?*)
-        other_args+=("$1")
-        shift
-        ;;
-
-      *)
-
-        other_args+=("$1")
-        shift
-
-        ;;
-
-    esac
-  done
-
-  filter_error=$(filter_dotfiles_directory)
-  if [[ -n $filter_error ]]; then
-    echo "$filter_error" >&2
-    exit 1
-  fi
-
-  filter_error=$(filter_dotfiles_git)
-  if [[ -n $filter_error ]]; then
-    echo "$filter_error" >&2
-    exit 1
-  fi
-
-}
-
-dot_idiff_parse_requirements() {
-
-  while [[ $# -gt 0 ]]; do
-    case "${1:-}" in
-      --help | -h)
-        long_usage=yes
-        dot_idiff_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  action="idiff"
-
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      --staged | -s)
-
-        args['--staged']=1
-        shift
-        ;;
-
       -?*)
         printf "invalid option: %s\n" "$key" >&2
         exit 1
@@ -2691,6 +2512,69 @@ dot_add_parse_requirements() {
 
 }
 
+dot_git_parse_requirements() {
+
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        dot_git_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  action="git"
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
+      -?*)
+        other_args+=("$1")
+        shift
+        ;;
+
+      *)
+
+        other_args+=("$1")
+        shift
+
+        ;;
+
+    esac
+  done
+
+  if [[ ${#other_args[@]} -eq 0 ]]; then
+    printf "missing required argument: COMMANDS...\nusage: dot git COMMANDS...\n" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_directory)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+  filter_error=$(filter_dotfiles_git)
+  if [[ -n $filter_error ]]; then
+    echo "$filter_error" >&2
+    exit 1
+  fi
+
+}
+
 initialize() {
   version="1.2.0"
   long_usage=''
@@ -2719,7 +2603,6 @@ run() {
     "update") dot_update_command ;;
     "env") dot_env_command ;;
     "edit") dot_edit_command ;;
-    "sync") dot_sync_command ;;
     "install") dot_install_command ;;
     "uninstall") dot_uninstall_command ;;
     "status") dot_status_command ;;
@@ -2729,11 +2612,11 @@ run() {
     "restore") dot_restore_command ;;
     "list") dot_list_command ;;
     "diff") dot_diff_command ;;
-    "idiff") dot_idiff_command ;;
     "filter") dot_filter_command ;;
     "commit") dot_commit_command ;;
     "cd") dot_cd_command ;;
     "add") dot_add_command ;;
+    "git") dot_git_command ;;
   esac
 }
 

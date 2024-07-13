@@ -1,15 +1,10 @@
 SCRIPT := "dot"
 
-export DOT_INSTALL_DIR := `pwd`
-
-generate:
-    bashly generate --upgrade
+build:
+    @bashly generate --env=production --upgrade
 
 watch:
-    bashly generate --watch
-
-build:
-    bashly generate --env=production --upgrade
+    @bashly generate --watch
 
 run *ARGS:
-    ./{{SCRIPT}} {{ARGS}}
+    @./{{SCRIPT}} {{ARGS}}

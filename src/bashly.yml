@@ -104,17 +104,6 @@ commands:
     examples:
       - dot edit
 
-  - name: sync
-    help: Update your dotfiles
-    group: Git
-
-    filters:
-      - dotfiles_directory
-      - dotfiles_git
-
-    examples:
-      - dot sync
-
   - name: install
     help: Install dotfiles using symbolic links
     group: Dotfiles
@@ -219,27 +208,6 @@ commands:
       - dot list
 
   - name: diff
-    help: Show diff with last commit
-    group: Git
-
-    catch_all:
-      label: files
-      help: Files to diff (relative to \$DOTFILES_DIR)
-
-    flags:
-      - short: -s
-        long: --staged
-        help: Only show diff for staged files
-
-    filters:
-      - dotfiles_directory
-      - dotfiles_git
-
-    examples:
-      - dot diff
-      - dot diff --staged
-
-  - name: idiff
     help: Show interactive diff with last commit
     group: Git
 
@@ -253,8 +221,8 @@ commands:
       - dotfiles_git
 
     examples:
-      - dot idiff
-      - dot idiff --staged
+      - dot diff
+      - dot diff --staged
 
   - name: filter
     help: Filter files from your dotfiles
@@ -302,3 +270,19 @@ commands:
       label: files
       help: Files
       required: true
+
+  - name: git
+    help: Run git commands within your dotfiles
+    group: Git
+
+    catch_all:
+      label: commands
+      help: Commands
+      required: true
+
+    filters:
+      - dotfiles_directory
+      - dotfiles_git
+
+    examples:
+      - dot git switch -c <new-branch>

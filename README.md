@@ -69,7 +69,7 @@ dot stage .bashrc
 dot commit "feat: add .bashrc"
 
 # ...and push them to your remote!
-dot sync
+dot git push
 ```
 
 ## 🚦 Usage
@@ -103,14 +103,13 @@ Dotfiles Commands:
   add         Add files to your dotfiles
 
 Git Commands:
-  sync        Update your dotfiles to the latest commit
   status      Show the status of your dotfiles
-  stage       Stage files for committing later
+  stage       Stage files
   unstage     Unstage files
-  restore     Restore unstaged files to their previous state
-  diff        Show diff with last commit
-  idiff       Show interactive diff with last commit
+  restore     Restore unstaged files (undo changes)
+  diff        Show interactive diff with last commit
   commit      Commit changes
+  git         Run git commands within your dotfiles
 
 Options:
   --help, -h
